@@ -7,6 +7,10 @@ import (
 	"net/http"
 )
 
+type Storage interface {
+	Save(s Session)
+}
+
 type Session struct {
 	Request     *http.Request
 	RequestBody []byte
@@ -16,6 +20,7 @@ type Session struct {
 }
 
 type Transport struct {
+	Storage Storage
 	http.Transport
 }
 
@@ -37,6 +42,10 @@ func (t Transport) RoundTrip(r *http.Request) (*http.Response, error) {
 	var err error
 	session.Response, err = t.Transport.RoundTrip(r)
 	session.ResponseBody, session.Response.Body = Tap(session.Response.Body)
+
+	if t.Storage != nil {
+		go t.Storage.Save(session)
+	}
 
 	return session.Response, err
 }
