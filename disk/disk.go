@@ -8,7 +8,7 @@ import (
 	"github.com/jpoz/wiretap"
 )
 
-const TimeFormat = "2006-01-02T15_04_05Z07_00"
+const TimeFormat = "2006-01-02T15_04_05_z07_00"
 
 type Storage struct {
 	Location string

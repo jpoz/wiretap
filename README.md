@@ -8,7 +8,7 @@ A library to watch http traffic
 
 ```go
 func main() {
-  // Works like a normal http.Client but writes Request/Response to "./cache"
+	// Works like a normal http.Client but writes Request/Response to "./cache"
 	tr := &wiretap.Transport{
 		Storage: disk.Storage{"./cache"},
 	}
@@ -18,7 +18,7 @@ func main() {
 
 	fmt.Printf("Returned %+s\n", resp.Status)
 
- 	fmt.Printf("Wrote to ./cache/jsonpi.com/GET/{TIMESTAMP}/response.txt")
+	fmt.Printf("Wrote to ./cache/jsonpi.com/GET/{TIMESTAMP}/response.txt")
 }
 ```
 
