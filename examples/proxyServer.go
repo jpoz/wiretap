@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -10,7 +9,14 @@ import (
 	"github.com/jpoz/wiretap/disk"
 )
 
-const Host = "http://github.com/"
+const Scheme = "http"
+const Host = "github.com"
+
+// Edit
+func director(r *http.Request) {
+	r.URL.Scheme = Scheme
+	r.URL.Host = Host
+}
 
 func main() {
 	// Create wiretap Transport
@@ -21,21 +27,14 @@ func main() {
 	// HTTP client with wiretap Transport
 	client := &http.Client{Transport: tr}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		req, err := http.NewRequest("GET", Host+r.URL.Path, nil)
-		resp, err := client.Do(req)
+	// Proxy
+	proxy := wiretap.Proxy{
+		Client:   client,
+		Director: director,
+	}
 
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(resp.StatusCode)
-			return
-		}
+	http.HandleFunc("/", proxy.Handle)
 
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		w.Write(bodyBytes)
-		log.Println("Wrote to ./cache")
-	})
-
-	fmt.Println("localhost:8000 -> http://example.com/")
+	fmt.Println("localhost:8000 -> http://github.com/")
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

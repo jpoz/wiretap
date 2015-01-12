@@ -1,9 +1,6 @@
 package wiretap
 
 import (
-	"bytes"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -29,15 +26,6 @@ type Session struct {
 type Transport struct {
 	Storage Storage
 	http.Transport
-}
-
-func tap(input io.ReadCloser) ([]byte, io.ReadCloser) {
-	output, _ := ioutil.ReadAll(input)
-
-	reader := bytes.NewReader(output)
-	readerCloser := ioutil.NopCloser(reader)
-
-	return output, readerCloser
 }
 
 // RoundTrip actually use the http.Transport.RoundTrip function but
