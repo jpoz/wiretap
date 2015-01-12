@@ -18,6 +18,6 @@ func main() {
 
 	fmt.Printf("Returned %+s\n", resp.Status)
 
-  fmt.Printf("Wrote to ./cache/jsonpi.com/GET/{TIMESTAMP}/response.txt")
+ 	fmt.Printf("Wrote to ./cache/jsonpi.com/GET/{TIMESTAMP}/response.txt")
 }
 ```
