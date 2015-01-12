@@ -44,7 +44,7 @@ func (t Transport) RoundTrip(r *http.Request) (*http.Response, error) {
 	session.ResponseBody, session.Response.Body = tap(session.Response.Body)
 
 	if t.Storage != nil {
-		go t.Storage.Save(session)
+		t.Storage.Save(session)
 	}
 
 	session.Completed = time.Now()

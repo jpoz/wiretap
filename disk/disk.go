@@ -25,8 +25,8 @@ func (s Storage) Save(session wiretap.Session) {
 
 	os.MkdirAll(fullPath, 0777)
 
-	go writeFile(reqPath, session.RequestBody)
-	go writeFile(respPath, session.ResponseBody)
+	writeFile(reqPath, session.RequestBody)
+	writeFile(respPath, session.ResponseBody)
 }
 
 func writeFile(path string, bytes []byte) {
