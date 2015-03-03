@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -57,6 +58,7 @@ type AddrSpec struct {
 }
 
 type Socks struct {
+	Server *http.Server
 }
 
 func (s Socks) Start(port string) error {
@@ -177,11 +179,18 @@ func (s *Socks) handleRequest(conn net.Conn, bufConn io.Reader) error {
 	}
 }
 
-// handleConnect is used to handle a connect command
-func (s *Socks) handleConnect(conn net.Conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
-	// Attempt to connect
-	addr := net.TCPAddr{IP: realDest.IP, Port: realDest.Port}
+type MiddleMan struct {
+	Bind     *AddrSpec
+	Dest     *AddrSpec
+	RealDest *AddrSpec
+	Server   *http.Server
+}
+
+func (mm *MiddleMan) Connect(conn net.Conn, bufConn io.Reader) error {
+	// addr := net.TCPAddr{IP: mm.RealDest.IP, Port: mm.RealDest.Port}
+	addr := net.TCPAddr{[]byte{0, 0, 0, 0}, 9898, ""}
 	target, err := net.DialTCP("tcp", nil, &addr)
+
 	if err != nil {
 		msg := err.Error()
 		resp := hostUnreachable
@@ -193,14 +202,17 @@ func (s *Socks) handleConnect(conn net.Conn, bufConn io.Reader, dest, realDest *
 		if err := sendReply(conn, resp, nil); err != nil {
 			return fmt.Errorf("Failed to send reply: %v", err)
 		}
-		return fmt.Errorf("Connect to %v failed: %v", dest, err)
+		return fmt.Errorf("Connect to %v failed: %v", mm.Dest, err)
 	}
+
 	defer target.Close()
 
-	// Send success
 	local := target.LocalAddr().(*net.TCPAddr)
-	bind := AddrSpec{IP: local.IP, Port: local.Port}
-	if err := sendReply(conn, successReply, &bind); err != nil {
+	mm.Bind = &AddrSpec{IP: local.IP, Port: local.Port}
+
+	fmt.Printf("mm.Bind %+v\n", mm.Bind)
+	// Send success
+	if err := sendReply(conn, successReply, mm.Bind); err != nil {
 		return fmt.Errorf("Failed to send reply: %v", err)
 	}
 
@@ -214,6 +226,16 @@ func (s *Socks) handleConnect(conn net.Conn, bufConn io.Reader, dest, realDest *
 	case e := <-errCh:
 		return e
 	}
+}
+
+// handleConnect is used to handle a connect command
+func (s *Socks) handleConnect(conn net.Conn, bufConn io.Reader, dest, realDest *AddrSpec) error {
+	// Attempt to connect
+	mm := MiddleMan{
+		Dest:     dest,
+		RealDest: realDest,
+	}
+	return mm.Connect(conn, bufConn)
 }
 
 // readAddrSpec is used to read AddrSpec.

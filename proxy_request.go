@@ -19,7 +19,7 @@ func NewProxy(client *http.Client) Proxy {
 	}
 }
 
-func (p Proxy) Handle(w http.ResponseWriter, r *http.Request) {
+func (p Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	output, _ := ioutil.ReadAll(r.Body)
 
 	reader := bytes.NewReader(output)

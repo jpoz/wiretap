@@ -33,7 +33,7 @@ func main() {
 		Director: director,
 	}
 
-	http.HandleFunc("/", proxy.Handle)
+	http.HandleFunc("/", proxy.ServeHTTP)
 
 	fmt.Println("localhost:8000 -> http://github.com/")
 	log.Fatal(http.ListenAndServe(":8000", nil))
