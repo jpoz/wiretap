@@ -8,21 +8,8 @@ import (
 	"github.com/jpoz/wiretap/disk"
 )
 
-type BasicHandler struct{}
-
-func (h BasicHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r)
-	w.Write([]byte("OK"))
-}
-
-const Scheme = "http"
-const Host = "github.com"
-
 // Edit
-func director(r *http.Request) {
-	r.URL.Scheme = Scheme
-	r.URL.Host = Host
-}
+func director(r *http.Request) {}
 
 func main() {
 	// Create wiretap Transport
@@ -34,13 +21,13 @@ func main() {
 	client := &http.Client{Transport: tr}
 
 	// Proxy
-	proxy := wiretap.Proxy{
+	proxy := wiretap.HttpProxy{
 		Client:   client,
 		Director: director,
 	}
 
 	s := &http.Server{
-		Addr:    ":9898",
+		Addr:    ":9080",
 		Handler: proxy,
 	}
 
@@ -50,11 +37,14 @@ func main() {
 		fmt.Println(err)
 	}()
 
-	socks := wiretap.Socks{
-		Server: s,
+	socks, err := wiretap.NewSocksProxy()
+	if err != nil {
+		fmt.Printf("err %+v\n", err)
 	}
 
 	println("Sock Started")
-	err := socks.Start("localhost:8888")
+	if err := socks.ListenAndServe("tcp", "127.0.0.1:8000"); err != nil {
+		panic(err)
+	}
 	fmt.Println(err)
 }

@@ -28,7 +28,7 @@ func main() {
 	client := &http.Client{Transport: tr}
 
 	// Proxy
-	proxy := wiretap.Proxy{
+	proxy := wiretap.HttpProxy{
 		Client:   client,
 		Director: director,
 	}
