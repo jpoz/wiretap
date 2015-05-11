@@ -1,22 +1,30 @@
 package wiretap
 
-import "net/http"
+import (
+	"net/http"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/jpoz/env/decoder"
+)
 
 type APIServer struct {
+	Addr string `expand:"${APIHOST}:${APIPORT}"`
 }
 
 // NewAPIServer returns a new APIServer
-// TODO config dis
 func NewAPIServer() *APIServer {
 	api := APIServer{}
+	decoder.Decode(&api)
 	return &api
 }
 
-func (api *APIServer) ListenAndServe(addr string) error {
+func (api *APIServer) ListenAndServe() error {
 	s := &http.Server{
-		Addr:    addr,
+		Addr:    api.Addr,
 		Handler: api,
 	}
+
+	log.Infof("Starting API server on %s", api.Addr)
 	return s.ListenAndServe()
 }
 
