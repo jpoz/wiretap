@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	wiretap := wiretap.NewWiretap()
+	wiretap, _ := wiretap.NewWiretap()
 	log.Fatal(wiretap.ListenAndServe())
 }
